@@ -74,6 +74,12 @@ contract Loanft is ERC1155Holder {
     address public COMMISSION_WALLET; // example wallet
     OrderStatus public orderStatus;
 
+    event TradeAssets(
+        IERC721 collateralAssetAddress,
+        IERC1155 assetToRequest,
+        uint256 assetToRequestId,
+        IERC1155 assetAsInterest
+    );
     event BorrowOrderEvent(
         address indexed borrower,
         uint256 indexed collaterallId,
@@ -121,20 +127,32 @@ contract Loanft is ERC1155Holder {
         LOAN_FEE = _loan_fee;
         COMMISSION_WALLET = _commission_Wallet;
         borrowerAddress = _borrowerAddress;
+
+        emit TradeAssets(
+            collateralAssetAddress,
+            assetToRequest,
+            assetToRequestId,
+            assetAsInterest
+        );
     }
 
-    // wee need to execute setApprovalForAll
-    function borrowOrder(uint256 collateralId, uint256 interestId, uint256 _interestAmount)
-        public
-        payable
-    {
-        require(_interestAmount > 0, "The number of assets as interest cannot be zero");
+    // we need to execute setApprovalForAll
+    function borrowOrder(
+        uint256 collateralId,
+        uint256 interestId,
+        uint256 _interestAmount
+    ) public payable {
+        require(
+            _interestAmount > 0,
+            "The number of assets as interest cannot be zero"
+        );
         require(
             IERC721(collateralAssetAddress).ownerOf(collateralId) == msg.sender,
             "Token must be staked by borrower!"
         );
         require(
-            IERC1155(assetAsInterest).balanceOf(msg.sender, interestId) >= _interestAmount,
+            IERC1155(assetAsInterest).balanceOf(msg.sender, interestId) >=
+                _interestAmount,
             "You need to have at least one!"
         );
         require(msg.value >= LOAN_FEE, "You have to pay the Loan fee");
@@ -162,6 +180,10 @@ contract Loanft is ERC1155Holder {
     }
 
     function lendOrder() public payable {
+        require(
+            orderStatus == OrderStatus.Requested,
+            "You Cannot Deposit Assets"
+        );
         require(
             IERC1155(assetToRequest).balanceOf(msg.sender, assetToRequestId) >=
                 amountAssetRequested,
@@ -211,7 +233,7 @@ contract Loanft is ERC1155Holder {
             "If the order is fulfilled you can't cancel the Loan"
         );
         require(msg.sender == borrowerAddress, "You cannot Cancel the Loan");
-        
+
         uint256 tokenInterestId = getInterestTokenStaked(borrowerAddress);
         uint256 tokenCollateralId = getCollateralTokenStaked(borrowerAddress);
         require(

@@ -23,8 +23,13 @@ module.exports = {
     mumbai: {
       url: `https://polygon-mumbai.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
       accounts: [process.env.PRIVATE_KEY],
-      chainId: 80001
-    }
+      chainId: 80001,
+    },
+    arbitrumG: {
+      url: `https://alien-twilight-voice.arbitrum-goerli.discover.quiknode.pro/f08321d64f93dcd1f396e09c85713017755de651/`,
+      accounts: [process.env.PRIVATE_KEY],
+      chainId: 421613,
+    },
   },
   gasReporter: {
     currency: "USD",
@@ -32,7 +37,7 @@ module.exports = {
     ?module=proxy
     &action=eth_gasPrice
     &apikey=${process.env.GAS_PRICE}`,
-    token: 'MATIC',
-    coinmarketcap: process.env.API_KEY
-  }
+    token: "MATIC",
+    coinmarketcap: process.env.API_KEY,
+  },
 };
